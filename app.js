@@ -1,23 +1,30 @@
 const express = require('express');
 const request = require('request');
 const app = express();
+const bodyParser = require('body-parser');
 require('dotenv').load();
+
+const port = process.env.PORT || 3000;
 
 app.use(express.static('public'));
 
+app.use(bodyParser.json());
+
 app.get('/', (req, res) => {
-	res.send('hello world');
+	console.log('hello');
 });
 
 app.post('/', (req, res) => {
+	console.log(req.params);
 	getWeatherData(req.body, res);
 });
 
-app.listen(3000, () => {
-	console.log('Front end server running on port 3000...');
+app.listen(port, () => {
+	console.log(`Front end server running on port ${port}...`);
 });
 
 function getWeatherData(location, res) {
+
 	const appid = process.env.APP_ID;
 
 	const url = 
@@ -38,14 +45,13 @@ function getWeatherData(location, res) {
 				speed : `${Math.round(data.wind.speed)} mph`,
 				degrees : data.wind.deg,
 			}
+
+			res.json(weather);
 		} else {
 			const data = JSON.parse(body);
-			weather.error = true;
-			weather.msg = data.message;
+			res.status(500).send({error: data.message});
 		}
 
-		// res.json(weather);
+		
 	});
 }
-
-getWeatherData(34.0522, -118.2437);
